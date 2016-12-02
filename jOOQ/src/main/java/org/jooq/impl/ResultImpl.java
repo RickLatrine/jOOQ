@@ -932,7 +932,7 @@ final class ResultImpl<R extends Record> implements Result<R>, AttachableInterna
                         List<Object> list = new ArrayList<Object>();
 
                         for (int index = 0; index < fields.fields.length; index++)
-                            list.add(formatJSON0(record.get(index)));
+                            list.add(formatRecordValue(record, index));
 
                         r.add(list);
                     }
@@ -943,7 +943,7 @@ final class ResultImpl<R extends Record> implements Result<R>, AttachableInterna
                         Map<String, Object> map = new LinkedHashMap<String, Object>();
 
                         for (int index = 0; index < fields.fields.length; index++)
-                            map.put(record.field(index).getName(), formatJSON0(record.get(index)));
+                            map.put(record.field(index).getName(), formatRecordValue(record, index));
 
                         r.add(map);
                     }
@@ -970,6 +970,14 @@ final class ResultImpl<R extends Record> implements Result<R>, AttachableInterna
         catch (java.io.IOException e) {
             throw new IOException("Exception while writing JSON", e);
         }
+    }
+
+    private Object formatRecordValue(Record record, int index) {
+        Field<?> field = record.field(index);
+        Converter converter = field.getConverter();
+        Object userValue = record.get(index);
+        Object dbValue = converter.from(userValue);
+        return formatJSON0(dbValue);
     }
 
     @Override
